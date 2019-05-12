@@ -1,6 +1,6 @@
 var WebSocket = require('ws');
 var fs = require('fs');
-var fsP = fs.promises
+var fsPromises = fs.promises
 var request = require('request');
 var ws = new WebSocket.Server({
   port: 3002
@@ -30,14 +30,15 @@ ws.on('connection', (connection, req) => {
     if (message.type == 'sendLink') {
       let headers = await getHeaders(message.data.url);
       let fileName = await getName({fileName: message.data.fileName, url: message.data.url, headers});
+      if(headers.error && headers.error == 'rangesNone')
+        headers.fileName = fileName;
       send({
         type: message.type,
         data: headers
       }, connection);
       if(!headers.error){
         console.log('start');
-
-        let test = await saveFile(message.data.url, headers, downloadDirectory+fileName);
+        let test = await saveFile(message.data.url, headers, fileName);
         console.log('saved');
         // console.log(test);
       }
@@ -49,13 +50,10 @@ ws.on('connection', (connection, req) => {
         name = message.data.url.split('?')[0].split('/');
         name = name[name.length - 1];
       }
-      fileList[name] = 'Unknown';
-      savingAll(message.data.url, downloadDirectory+name);
-      delete fileList[name];
-      downloadList.push()
+      savingAll(message.data.url, name, message.data.length);
     }
     if(message.type == 'getInfo'){
-      send({type: 'getInfo', data:{downloadList, fileList}}, connection);
+      send({type: 'getInfo', data:{fileList}}, connection);
     }
   }
 });
@@ -94,7 +92,7 @@ function saveFile(url, headers, fileName, {partSize = 1048576, trysSize = 10, ma
   if (!(this instanceof saveFile)) return new saveFile(url, headers, fileName, {partSize, trysSize, maxStream});
   this.trys = {};
   this.url = url;
-  this.headers = headers;
+  this.headers = headers || {};
   this.partSize = partSize;
   this.trysSize = trysSize;
   this.parts = 0;
@@ -105,6 +103,13 @@ function saveFile(url, headers, fileName, {partSize = 1048576, trysSize = 10, ma
   this.timestamp = Date.now();
   this.promise = new Promise(res=>{this.res=res;});
   this.fileName = fileName;
+  fileList[this.timestamp] = {
+    fileName: this.fileName,
+    url: this.url,
+    status: this.status,
+    partsLoaded: this.partsLoaded,
+    size: this.headers['content-length']
+  };
   this.writeStream = fs.createWriteStream(downloadDirectory+this.fileName); // создаем поток
   for (var i = 0; i < maxStream; i++) {
     this.saveParts();
@@ -187,12 +192,11 @@ function saving(part, bytes) {
     this.status = 'saved';
     this.res();
   }
-  if(this.status == 'saved'){
-    downloadList.push(this.fileName+' - '+getSize(this.headers['content-length']));
-    delete fileList[this.fileName];
-  }else {
-    fileList[this.fileName] = getSize(this.partsLoaded*this.partSize)+'/'+getSize(this.headers['content-length']);
-  }
+
+  fileList[this.timestamp].status = this.status;
+  fileList[this.timestamp].partsLoaded = this.partsLoaded;
+
+
 }
  function getSize(num) {
    if(num < 1024) return num+'b/s';
@@ -201,21 +205,28 @@ function saving(part, bytes) {
    else if ((num=num/1024) < 1024) return num.toFixed(0)+'Gb';
    else return num.toFixed(0)+'Gb';
  }
-function savingAll(url, fileName) {
+function savingAll(url, fileName, length) {
+  let timestamp = Date.now();
+  fileList[timestamp] = {
+    fileName: fileName,
+    url: url,
+    status: 'saving',
+    type: 'all',
+    size: length
+  };
   return new Promise(response=>{
     request.head(url, (err, res, body) => {
           request(url)
               .pipe(fs.createWriteStream(fileName))
-              .on("close", response);
+              .on("close", ()=>{fileList[timestamp].status = download;response();});
       });
   });
 }
 
 function getHeaders(url) {
   return new Promise(res => {
-    request
-      .get(url)
-      .on('response', function(response) {
+    let r = request.get(url);
+      r.on('response', function(response) {
         if (response.statusCode != 200) {
           res({
             error: 'statusCode'
@@ -223,11 +234,13 @@ function getHeaders(url) {
         } else if (!response.headers['accept-ranges'] || response.headers['accept-ranges'] != 'bytes') {
           res({
             error: 'rangesNone',
-            type: response.headers['conttent-type']
+            'content-type': response.headers['content-type'],
+            length: response.headers['content-length']
           });
         } else {
           res(response.headers);
         }
+        r.abort();
       })
   });
 }
@@ -271,4 +284,13 @@ async function getName({fileName, url, headers}){
 		(indexPoint?fileName.substring(indexPoint):'');
 
 	return fileName;
+}
+
+function mkdir (dirpath) {
+  try {
+    fs.mkdirSync(dirpath, { recursive: true });
+    return true;
+  } catch (err) {
+    if (err.code !== 'EEXIST') return fase;
+  }
 }
