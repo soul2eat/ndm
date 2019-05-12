@@ -10,7 +10,7 @@ Admin = '';
 var exClients = [];
 var fileList = {};
 var downloadList = [];
-var downloadDirectory = './dowloads/';
+var downloadDirectory = './downloads/';
 mkdir(downloadDirectory);
 saveFile.prototype.saving = saving;
 saveFile.prototype.saveParts = saveParts;
