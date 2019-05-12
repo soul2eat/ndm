@@ -6,7 +6,7 @@ window.onload=()=>{
   socket = socketInnit('ws://127.0.0.1:3002/');
   defaultButton();
 }
-
+var hashTable = [];
 
 function socketInnit(url) {
   let socket = new WebSocket(url);
@@ -59,13 +59,47 @@ function handler(event) {
     }
   }
   if(message.type == 'getInfo'){
-    document.querySelector('#downloaded').innerHTML = '';
-    document.querySelector('#downloads').innerHTML = '';
-    message.data.downloadList.forEach(val=>{
-      document.querySelector('#downloaded').innerHTML += val+'<br>';
-    });
+    let tbody = document.querySelector('tbody.fileList');
+    let tbodyList = tbody.querySelectorAll('tr');
+    let num = tbodyList.length;
+    let tbodyExist = false;
+
+      if(num > 0){
+        tbodyExist = true;
+      }
+
     for (var key in message.data.fileList) {
-      document.querySelector('#downloads').innerHTML += key+' - '+ message.data.fileList[key];
+      let item = message.data.fileList[key];
+      if(!item.timestamp)item.timestamp = key;
+      if(tbodyExist){
+        let id = hashTable.indexOf(key);
+        if(~id){
+          let tr = tbodyList[id];
+          let td = tr.querySelectorAll('td');
+          td[2].innerText = item.status != 'download'?item.downloaded: 'Скачано';
+          td[3].innerText = getDate(item.timestamp);
+        }
+        else {
+          tbody.innerHTML += `<tr>
+            <td>${item.fileName}</td>
+            <td>${(item.size?getSize(item.size):'Неизвестно')}</td>
+            <td>${(item.status != 'download'?item.downloaded: 'Скачано')}</td>
+            <td>${getDate(item.timestamp)}</td>
+          </tr>`;
+          num++;
+          hashTable.push(key);
+        }
+      }
+      else {
+        tbody.innerHTML += `<tr>
+          <td>${item.fileName}</td>
+          <td>${(item.size?getSize(item.size):'Неизвестно')}</td>
+          <td>${(item.status != 'download'?item.downloaded: 'Скачано')}</td>
+          <td>${getDate(item.timestamp)}</td>
+        </tr>`;
+        num++;
+        hashTable.push(key);
+      }
     }
   }
 
@@ -109,4 +143,25 @@ function defaultButton() {
       }
     })
   }
+}
+function getDate(time){
+	var date = new Date(time*1);
+  return date.toLocaleString();
+
+	date.setTime(1556447053400);
+	var hour = (date.getHours()+'').length < 2?('0'+date.getHours()): date.getHours();
+	var minutes = (date.getMinutes()+'').length < 2?('0'+date.getMinutes()): date.getMinutes();
+	var day = (date.getDate()+'').length < 2?('0'+date.getDate()): date.getDate();
+	var month = ((date.getMonth()+1)+'').length < 2?('0'+(date.getMonth()+1)): (date.getMonth()+1);
+	var year = (date.getDate()+'').length < 2?('0'+date.getDate()): date.getDate();
+
+	return hour+':'+minutes+'  '+day+'.'+month+'.'+date.getFullYear();
+}
+
+function getSize(num) {
+  if(num < 1024) return num+'b/s';
+  else if ((num=num/1024) < 1024) return num.toFixed(0)+'Kb';
+  else if ((num=num/1024) < 1024) return num.toFixed(0)+'Mb';
+  else if ((num=num/1024) < 1024) return num.toFixed(0)+'Gb';
+  else return num.toFixed(0)+'Gb';
 }

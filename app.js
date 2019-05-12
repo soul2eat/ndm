@@ -108,7 +108,8 @@ function saveFile(url, headers, fileName, {partSize = 1048576, trysSize = 10, ma
     url: this.url,
     status: this.status,
     partsLoaded: this.partsLoaded,
-    size: this.headers['content-length']
+    size: this.headers['content-length'],
+    downloaded: 0
   };
   this.writeStream = fs.createWriteStream(downloadDirectory+this.fileName); // создаем поток
   for (var i = 0; i < maxStream; i++) {
@@ -189,13 +190,25 @@ function saving(part, bytes) {
   }
   if (this.partsLoaded*this.partSize >= this.headers['content-length']){
     this.writeStream.end();
-    this.status = 'saved';
+    this.status = 'download';
     this.res();
   }
 
   fileList[this.timestamp].status = this.status;
   fileList[this.timestamp].partsLoaded = this.partsLoaded;
 
+  if(this.status == 'download'){
+      fileList[this.timestamp].timestamp = Date.now();
+    delete fileList[this.timestamp].partsLoaded;
+    delete fileList[this.timestamp].downloaded;
+  }else {
+    fileList[this.timestamp].downloaded = (this.hashParts.length + this.partsLoaded)*this.partSize;
+    if(this.headers['content-length']){
+      fileList[this.timestamp].downloaded = (fileList[this.timestamp].downloaded/this.headers['content-length']*100).toFixed(2)+'%';
+    }else {
+      fileList[this.timestamp].downloaded = getSize(fileList[this.timestamp].downloaded);
+    }
+  }
 
 }
  function getSize(num) {
@@ -212,13 +225,14 @@ function savingAll(url, fileName, length) {
     url: url,
     status: 'saving',
     type: 'all',
-    size: length
+    size: length,
+    downloaded: 'Неизвестно'
   };
   return new Promise(response=>{
     request.head(url, (err, res, body) => {
           request(url)
               .pipe(fs.createWriteStream(fileName))
-              .on("close", ()=>{fileList[timestamp].status = download;response();});
+              .on("close", ()=>{fileList[timestamp].status = 'download';response();});
       });
   });
 }
