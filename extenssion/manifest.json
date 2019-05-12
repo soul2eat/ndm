@@ -1,0 +1,15 @@
+{
+    "manifest_version": 2,
+    "name": "NDM",
+    "version": "0.01",
+    "description": "Node Download Manager",
+    "permissions":
+    [
+        "<all_urls>",
+        "tabs"
+    ],
+    "browser_action":{
+        "default_title":"Default",
+        "default_popup":"popup.html"
+    }
+}
