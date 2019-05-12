@@ -80,8 +80,8 @@ function handler(event) {
           td[3].innerText = getDate(item.timestamp);
         }
         else {
-          tbody.innerHTML += `<tr>
-            <td>${item.fileName}</td>
+          tbody.innerHTML += `<tr title="${item.fileName}">
+            <td class="cut" alt="">${item.fileName}</td>
             <td>${(item.size?getSize(item.size):'Неизвестно')}</td>
             <td>${(item.status != 'download'?item.downloaded: 'Скачано')}</td>
             <td>${getDate(item.timestamp)}</td>
@@ -91,8 +91,8 @@ function handler(event) {
         }
       }
       else {
-        tbody.innerHTML += `<tr>
-          <td>${item.fileName}</td>
+        tbody.innerHTML += `<tr title="${item.fileName}">
+          <td class="cut" alt="">${item.fileName}</td>
           <td>${(item.size?getSize(item.size):'Неизвестно')}</td>
           <td>${(item.status != 'download'?item.downloaded: 'Скачано')}</td>
           <td>${getDate(item.timestamp)}</td>
