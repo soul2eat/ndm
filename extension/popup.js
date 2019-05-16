@@ -181,8 +181,23 @@ function getSize(num) {
   else return num.toFixed(0) + 'Gb';
 }
 
+//
+
 // context menu
 function contextMenu() {
+  if(require){
+    // DEFAULT context menu
+    let { remote } = require('electron')
+    let { Menu, MenuItem } = remote
+    let menuDef = new Menu()
+    menuDef.append(new MenuItem({ label: 'Вставить', role: 'paste'}))
+    menuDef.append(new MenuItem({ label: 'Копировать', role: 'copy'}))
+    menuDef.append(new MenuItem({ label: 'Вырезать', role: 'cut'}))
+  }
+
+
+
+  // TABLE context menu
   //get menu el
   let i = document.getElementById("menu").style;
   //check
@@ -198,69 +213,52 @@ function contextMenu() {
       } else if (target.parentElement.tagName == 'TR') {
         menu(posX, posY, target.parentElement);
         e.preventDefault();
+      }else if(menuDef){
+        menuDef.popup({ window: remote.getCurrentWindow() });
+        e.preventDefault();
+
       }
     }, false);
     document.addEventListener('click', function(e) {
       i.opacity = "0";
-      setTimeout(function() {
-        i.visibility = "hidden";
-      }, 501);
+      i.visibility = "hidden";
     }, false);
-  } else {
-    document.attachEvent('oncontextmenu', function(e) {
-      let posX = e.clientX;
-      let posY = e.clientY;
-      let target = e.target;
-      if (target.tagName == 'TR') {
-        menu(posX, posY, target);
-        e.preventDefault();
-      } else if (target.parentElement.tagName == 'TR') {
-        menu(posX, posY, target.parentElement);
-        e.preventDefault();
-      }
-    });
-    document.attachEvent('onclick', function(e) {
-      i.opacity = "0";
-      setTimeout(function() {
-        i.visibility = "hidden";
-      }, 501);
-    });
   }
-}
 
-function dmEvents(id, event) {
-  socket.sendJson({type: event, data:{id}});
-  if(event == 'delete'){
-    document.querySelector('tbody.fileList').innerHTML = '';
-    hashTable = [];
+  function dmEvents(id, event) {
+    socket.sendJson({type: event, data:{id}});
+    if(event == 'delete'){
+      document.querySelector('tbody.fileList').innerHTML = '';
+      hashTable = [];
+    }
+    console.log(id);
+    console.log(event);
   }
-  console.log(id);
-  console.log(event);
-}
 
-function menu(x, y, el) {
-  let i = document.getElementById("menu");
-  i.innerHTML = '';
-  //
-  createElem( `<div>Продолжить</div>`, 'continue');
-  createElem( `<div>Пауза</div>`, 'pause');
-  createElem( `<div>Остановить</div>`, 'stop');
-  createElem( `<div>Удалить</div>`, 'delete');
-  //ONLY ELECTRON
-  createElem( `<div>Показать в папке</div>`, 'openDir');
-  createElem( `<div>Открыть файл</div>`, 'openFile');
+  function menu(x, y, el) {
+    let i = document.getElementById("menu");
+    i.innerHTML = '';
+    //
+    createElem( `<div>Продолжить</div>`, 'continue');
+    createElem( `<div>Пауза</div>`, 'pause');
+    createElem( `<div>Остановить</div>`, 'stop');
+    createElem( `<div>Удалить</div>`, 'delete');
+    //ONLY ELECTRON
+    createElem( `<div>Показать в папке</div>`, 'openDir');
+    createElem( `<div>Открыть файл</div>`, 'openFile');
 
-  function createElem(inner, event) {
-    let div = document.createElement('div');
-    div.innerHTML = inner;
-    div.onclick = () => {
-      dmEvents(el.dataset.id, event)
-    };
-    i.appendChild(div);
+    function createElem(inner, event) {
+      let div = document.createElement('div');
+      div.innerHTML = inner;
+      div.onclick = () => {
+        dmEvents(el.dataset.id, event)
+      };
+      i.appendChild(div);
+    }
+    //show
+    i.style.top = y + "px";
+    i.style.left = x + "px";
+    i.style.visibility = "visible";
+    i.style.opacity = "1";
   }
-  //show
-  i.style.top = y + "px";
-  i.style.left = x + "px";
-  i.style.visibility = "visible";
-  i.style.opacity = "1";
 }
