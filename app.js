@@ -1,16 +1,53 @@
+
+const {app, BrowserWindow, shell} = require('electron')
+
+let mainWindow
+
+function createWindow () {
+  mainWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      nodeIntegration: true
+    }
+  });
+  mainWindow.loadFile('./extenssion/popup.html')
+  // Emitted when the window is closed.
+  mainWindow.on('closed', function () {
+    mainWindow = null
+  })
+}
+
+app.on('ready', createWindow)
+
+// Quit when all windows are closed.
+app.on('window-all-closed', function () {
+  // On macOS it is common for applications and their menu bar
+  // to stay active until the user quits explicitly with Cmd + Q
+  if (process.platform !== 'darwin') app.quit()
+})
+
+app.on('activate', function () {
+  // On macOS it's common to re-create a window in the app when the
+  // dock icon is clicked and there are no other windows open.
+  if (mainWindow === null) createWindow()
+})
+
+
 var WebSocket = require('ws');
+var os = require('os');
 var fs = require('fs');
 var fsPromises = fs.promises
 var request = require('request');
 var ws = new WebSocket.Server({
   port: 3002
 });
-Admin = '';
 // fsPromises.readdir(path
 var exClients = [];
 var fileList = {};
 var downloadList = [];
-var downloadDirectory = './downloads/';
+var downloadDirectory = os.homedir()+'\\Downloads\\';
+// console.log(shell.showItemInFolder(downloadDirectory+'index.js'));
 mkdir(downloadDirectory);
 saveFile.prototype.saving = saving;
 saveFile.prototype.saveParts = saveParts;
@@ -64,6 +101,12 @@ ws.on('connection', (connection, req) => {
         }
       }, connection);
     }
+    if(message.type == 'openDir'){
+      shell.showItemInFolder(fileList[message.data.id].fileDir);
+    }
+    if(message.type == 'openFile'){
+      shell.openItem(fileList[message.data.id].fileDir);
+    }
     if(message.type == 'pause' || message.type == 'stop'){
       fileList[message.data.id].status = message.type;
     }
@@ -113,11 +156,7 @@ function send(json, conn) {
   }
   return;
 }
-Admin = {
-  saveFile,
-  fs,
-  request
-};
+
 // setTimeout(test, 3000);
 async function test() {
   let url = 'http://hd.aniland.org/720/2147412088.mp4?md5=qnt1e_Ds4rScHqLYjPTnfA&time=1557488913';
@@ -165,6 +204,7 @@ function saveFile(url, headers, fileName, {
   this.fileName = fileName;
   fileList[this.timestamp] = {
     fileName: this.fileName,
+    fileDir: downloadDirectory + this.fileName,
     url: this.url,
     status: this.status,
     partsLoaded: this.partsLoaded,

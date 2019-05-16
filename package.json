@@ -1,15 +1,21 @@
 {
-  "name": "tools",
-  "version": "1.0.0",
-  "description": "Tools with my laizy",
+  "name": "NDM",
+  "version": "1.0.1",
+  "description": "Node download manger",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "electron .",
+    "build-win64": "electron-packager ./ ndm --platform=win32 --arch=x64 --overwrite --ignore=build",
+    "build-all": "electron-packager ./ ndm --platform=all --arch=all --overwrite --ignore=build"
   },
   "author": "SoulEat",
   "license": "ISC",
   "dependencies": {
     "request": "^2.88.0",
     "ws": "^7.0.0"
-  }
+  },
+  "devDependencies": {
+    "electron": "^5.0.0",
+    "electron-packager": "^13.1.1"
+  },
 }
