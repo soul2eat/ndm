@@ -6,6 +6,11 @@ window.onload = () => {
   socket = socketInnit('ws://127.0.0.1:3002/');
   defaultButton();
   contextMenu();
+  document.querySelector('#chooseDir').onclick = ()=>{
+    socket.sendJson({
+      type: 'chooseDir'
+    });
+  }
 }
 var hashTable = [];
 
@@ -187,9 +192,9 @@ function getSize(num) {
 function contextMenu() {
   if(require){
     // DEFAULT context menu
-    let { remote } = require('electron')
+    var { remote } = require('electron')
     let { Menu, MenuItem } = remote
-    let menuDef = new Menu()
+    var menuDef = new Menu()
     menuDef.append(new MenuItem({ label: 'Вставить', role: 'paste'}))
     menuDef.append(new MenuItem({ label: 'Копировать', role: 'copy'}))
     menuDef.append(new MenuItem({ label: 'Вырезать', role: 'cut'}))

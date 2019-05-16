@@ -1,30 +1,42 @@
 
-const {app, BrowserWindow, shell} = require('electron')
+const {app, BrowserWindow, shell, dialog, Tray, Menu} = require('electron')
 
-let mainWindow
-
+let mainWindow;
+let tray;
 function createWindow () {
   mainWindow = new BrowserWindow({
+    // titleBarStyle: 'hidden',
+    // frame: false,
     width: 800,
     height: 600,
+    icon: './icon.ico',
     webPreferences: {
       nodeIntegration: true
     }
   });
-  mainWindow.loadFile('./extenssion/popup.html')
+  mainWindow.loadFile('./index.html');
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
     mainWindow = null
   })
 }
 
-app.on('ready', createWindow)
+app.on('ready', ()=>{
+  createWindow();
+  tray = new Tray('./icon.ico');
+  let contextMenu = Menu.buildFromTemplate([
+    { label: 'Открыть', click(){createWindow()} },
+    { label: 'Выйти', click(){app.quit()} },
+  ]);
+  tray.setToolTip('Node Download Manager');
+  tray.setContextMenu(contextMenu);
+  })
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
   // On macOS it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== 'darwin') app.quit()
+  // if (process.platform !== 'darwin') app.quit()
 })
 
 app.on('activate', function () {
@@ -104,6 +116,15 @@ ws.on('connection', (connection, req) => {
     if(message.type == 'openDir'){
       shell.showItemInFolder(fileList[message.data.id].fileDir);
     }
+    if(message.type == 'chooseDir'){
+      let choose = await new Promise(function(resolve, reject) {
+        dialog.showOpenDialog({ properties: ['openDirectory'] }, path=>{resolve(path)});
+      });
+      if(choose)
+        downloadDirectory = choose[0];
+
+    }
+
     if(message.type == 'openFile'){
       shell.openItem(fileList[message.data.id].fileDir);
     }
