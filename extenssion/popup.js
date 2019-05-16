@@ -226,52 +226,41 @@ function contextMenu() {
       }, 501);
     });
   }
+}
 
-  function dmEvents(id, event) {
-    socket.sendJson({type: event, data:{id}});
-    if(event == 'delete'){
-      document.querySelector('tbody.fileList').innerHTML = '';
-      hashTable = [];
-    }
-    console.log(id);
-    console.log(event);
+function dmEvents(id, event) {
+  socket.sendJson({type: event, data:{id}});
+  if(event == 'delete'){
+    document.querySelector('tbody.fileList').innerHTML = '';
+    hashTable = [];
   }
+  console.log(id);
+  console.log(event);
+}
 
-  function menu(x, y, el) {
-    let i = document.getElementById("menu");
-    i.innerHTML = '';
-    //
+function menu(x, y, el) {
+  let i = document.getElementById("menu");
+  i.innerHTML = '';
+  //
+  createElem( `<div>Продолжить</div>`, 'continue');
+  createElem( `<div>Пауза</div>`, 'pause');
+  createElem( `<div>Остановить</div>`, 'stop');
+  createElem( `<div>Удалить</div>`, 'delete');
+  //ONLY ELECTRON
+  createElem( `<div>Показать в папке</div>`, 'openDir');
+  createElem( `<div>Открыть файл</div>`, 'openFile');
+
+  function createElem(inner, event) {
     let div = document.createElement('div');
-    div.innerHTML = `<div>Продолжить</div>`;
+    div.innerHTML = inner;
     div.onclick = () => {
-      dmEvents(el.dataset.id, 'continue')
+      dmEvents(el.dataset.id, event)
     };
     i.appendChild(div);
-    //
-    div = document.createElement('div');
-    div.innerHTML = `<div>Пауза</div>`;
-    div.onclick = () => {
-      dmEvents(el.dataset.id, 'pause')
-    };
-    i.appendChild(div);
-    //
-    div = document.createElement('div');
-    div.innerHTML = `<div>Остановить</div>`;
-    div.onclick = () => {
-      dmEvents(el.dataset.id, 'stop')
-    };
-    i.appendChild(div);
-    //
-    div = document.createElement('div');
-    div.innerHTML = `<div>Удалить</div>`;
-    div.onclick = () => {
-      dmEvents(el.dataset.id, 'delete')
-    };
-    i.appendChild(div);
-    //show
-    i.style.top = y + "px";
-    i.style.left = x + "px";
-    i.style.visibility = "visible";
-    i.style.opacity = "1";
   }
+  //show
+  i.style.top = y + "px";
+  i.style.left = x + "px";
+  i.style.visibility = "visible";
+  i.style.opacity = "1";
 }
