@@ -36,6 +36,10 @@
   </div>
   <script>
       require('./extension/popup.js');
+      const {ipcRenderer} = require('electron');
+  ipcRenderer.on('message', function(event, text) {
+    console.log(text);
+  })
   </script>
 
 
