@@ -1,9 +1,21 @@
 
 const {app, BrowserWindow, shell, dialog, Tray, Menu, ipcMain} = require('electron');
+const log = require('electron-log');
 const { autoUpdater } = require("electron-updater");
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = 'info';
+log.info('App starting...');
 
+//ndm
+var os = require('os');
+var fs = require('fs');
+var fsPromises = fs.promises
+var homeDir = app.getPath('userData');
+var fileList = readJF(homeDir+'\\file-list.json') || {};
+var config = readJF(homeDir+'\\config.json') || {settings:{}};
+var downloadDirectory = config.downloadDir || os.homedir()+'\\Downloads\\';
 
-
+//electron
 let mainWindow;
 let tray;
 function createWindow () {
@@ -29,7 +41,12 @@ app.on('ready', ()=>{
   tray = new Tray(__dirname+'/icon.ico');
   let contextMenu = Menu.buildFromTemplate([
     { label: 'Открыть', click(){createWindow()} },
-    { label: 'Выйти', click(){app.quit()} },
+    { label: 'Выйти', click(){
+        writeJF(homeDir+'\\file-list.json', fileList);
+        writeJF(homeDir+'\\config.json', config);
+        app.quit();
+      }
+    },
   ]);
   tray.setToolTip('Node Download Manager');
   tray.setContextMenu(contextMenu);
@@ -51,7 +68,7 @@ app.on('activate', function () {
 })
 function sendStatusToWindow(text) {
   log.info(text);
-  win.webContents.send('message', text);
+  mainWindow.webContents.send('message', text);
 }
 
 autoUpdater.on('checking-for-update', () => {
@@ -78,18 +95,17 @@ autoUpdater.on('update-downloaded', (info) => {
 
 
 var WebSocket = require('ws');
-var os = require('os');
-var fs = require('fs');
-var fsPromises = fs.promises
+
 var request = require('request');
 var ws = new WebSocket.Server({
   port: 3002
 });
+
+
+
 // fsPromises.readdir(path
 var exClients = [];
-var fileList = {};
-var downloadList = [];
-var downloadDirectory = os.homedir()+'\\Downloads\\';
+
 // console.log(shell.showItemInFolder(downloadDirectory+'index.js'));
 mkdir(downloadDirectory);
 saveFile.prototype.saving = saving;
@@ -151,8 +167,11 @@ ws.on('connection', (connection, req) => {
       let choose = await new Promise(function(resolve, reject) {
         dialog.showOpenDialog({ properties: ['openDirectory'] }, path=>{resolve(path)});
       });
-      if(choose)
+      if(choose){
         downloadDirectory = choose[0];
+        config.settings.downloadDir = downloadDirectory;
+      }
+
 
     }
 
@@ -519,3 +538,30 @@ function mkdir(dirpath) {
     if (err.code !== 'EEXIST') return fase;
   }
 }
+
+function readJF(path) {
+  try {
+    return JSON.parse(fs.readFileSync(path, 'utf8'));
+  } catch (e) {
+    console.log(e);
+    return false;
+  }
+}
+
+function writeJF(path, data) {
+  if(!writeJF[path])writeJF[path]='closed';
+  if(writeJF[path] == 'closed'){
+    writeJF[path] = 'open';
+    try {
+      fs.writeFileSync(path, JSON.stringify(data));
+      delete writeJF[path];
+    } catch (e) {
+      delete writeJF[path];
+      console.log(e);
+    }
+  }else {
+    setTimeout(()=>{writeJF(path, data)}, 1000);
+  }
+}
+setInterval(()=>{writeJF(homeDir+'\\file-list.json', fileList)}, 5*6000);
+setInterval(()=>{writeJF(homeDir+'\\config.json', config)}, 5*6000);
