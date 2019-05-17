@@ -2,7 +2,7 @@
 require('update-electron-app')({
   repo: 'soul2eat/ndm',
   updateInterval: '5 minutes',
-  
+
 })
 const {app, BrowserWindow, shell, dialog, Tray, Menu} = require('electron')
 if (handleSquirrelEvent(app)) {
@@ -186,7 +186,7 @@ function send(json, conn) {
   }
   return;
 }
-
+console.log('test auto update');
 // setTimeout(test, 3000);
 async function test() {
   let url = 'http://hd.aniland.org/720/2147412088.mp4?md5=qnt1e_Ds4rScHqLYjPTnfA&time=1557488913';
