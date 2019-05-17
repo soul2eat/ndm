@@ -1,17 +1,19 @@
 {
   "name": "NDM",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Node download manger",
   "main": "app.js",
+  "repository": "https://github.com/soul2eat/ndm.git",
   "scripts": {
     "start": "electron .",
-    "build-win64": "electron-packager ./ ndm --platform=win32 --arch=x64 --overwrite --ignore=build",
-    "build-all": "electron-packager ./ ndm --platform=all --arch=all --overwrite --ignore=build"
+    "build-win64": "electron-packager ./ ndm --platform=win32 --arch=x64 --overwrite --ignore=build --ignore=build --ignore=downloads --out=build/win --icon=./icon.ico",
+    "build-all": "electron-packager ./ ndm --platform=all --arch=all --overwrite --ignore=build --ignore=downloads --out=build/win --icon=./icon.ico"
   },
   "author": "SoulEat",
   "license": "ISC",
   "dependencies": {
     "request": "^2.88.0",
+    "update-electron-app": "^1.3.0",
     "ws": "^7.0.0"
   },
   "devDependencies": {
