@@ -34,6 +34,7 @@ app.on('ready', ()=>{
   tray.setToolTip('Node Download Manager');
   tray.setContextMenu(contextMenu);
   autoUpdater.checkForUpdatesAndNotify();
+  sendStatusToWindow('hi');
   })
 
 // Quit when all windows are closed.
