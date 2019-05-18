@@ -1,6 +1,6 @@
 {
   "name": "NDM",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Node download manger",
   "main": "app.js",
   "repository": "https://github.com/soul2eat/ndm.git",
