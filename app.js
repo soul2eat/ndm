@@ -20,8 +20,8 @@ let mainWindow;
 let tray;
 function createWindow () {
   mainWindow = new BrowserWindow({
-    // titleBarStyle: 'hidden',
-    // frame: false,
+    titleBarStyle: 'hidden',
+    frame: false,
     width: 800,
     height: 600,
     icon: './icon.ico',

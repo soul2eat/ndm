@@ -4,9 +4,103 @@
   <meta charset="utf-8">
   <link rel="stylesheet" href="./extension/style.css">
   <title></title>
+  <style>
+    .electron-title {
+      background: #2c3135;
+      height: 25px;
+    }
+
+    .title-name {
+      width: 30px;
+      border: 0;
+      color: #808080;
+      font-family: sans-serif;
+      font-weight: 800;
+    }
+
+    .title-drag {
+      height: 100%;
+      width: 100%;
+      -webkit-app-region: drag;
+    }
+
+    .title-bar {
+      border: 0;
+      width: 100px;
+    }
+
+    .title-bar img {
+      width: 19px;
+      padding-left: 7px;
+
+    }
+
+
+
+    /* .title-bar {
+      float: right;
+    }
+
+    .title-name{
+      width: 20px;
+    }
+    .titleBarClose {
+      width: 20px;
+      display: inline-block;
+      margin-top: 2px;
+      margin-right: 9px;
+    }
+
+    .titleBarClose img {
+      width: 19px;
+
+    } */
+
+    /* .title-drag{
+      -webkit-user-select: none;
+      -webkit-app-region: drag;
+      /* height:100%; */
+    }
+
+    */
+    /* .titleBarClose:hover {
+      filter: brightness() invert(1);
+    } */
+
+    .bottomPanel {
+      margin: 10px 25px;
+    }
+
+    .mb1 {
+      margin-bottom: 1em;
+    }
+  </style>
 </head>
 
-<body style="width: 500px;background: url(https://html5book.ru/wp-content/uploads/2015/07/background46.png) repeat top left;">
+<body style="margin: 0;background: url(https://html5book.ru/wp-content/uploads/2015/07/background46.png) repeat top left;">
+  <script>
+  const { remote } = require('electron');
+  </script>
+  <div class="electron-title">
+    <table style="width: 100%;height: 100%;">
+      <tbody>
+        <tr>
+          <td class="title-name">NDM</td>
+          <td>
+            <div class="title-drag"></div>
+          </td>
+          <td class="title-bar">
+            <div>
+              <img src="file:///C:/Users/SoulEat/Pictures/hide.png" onclick="remote.getCurrentWindow().minimize();">
+              <img src="file:///C:/Users/SoulEat/Pictures/show2.png" onclick="maxWin()">
+
+              <img src="https://vignette.wikia.nocookie.net/mocreatures/images/7/7d/Unobtainable.png/revision/latest?cb=20170708092202&amp;path-prefix=ru" onclick="remote.getCurrentWindow().close()">
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
   <div id="test">
 
   </div>
@@ -24,22 +118,32 @@
     <tbody class="fileList">
     </tbody>
   </table>
-  <div id="alert"></div>
-  Add file name:
-  <input type="text" name="link" id="fileName" value=""><br>
-  Add link:
-  <input type="text" name="link" id="link" value="">
-  <div id="buttons">
-  </div><br>
-  <button type="button" name="button" id="chooseDir">Выбрать директорию загрузки</button>
+  <div class="bottomPanel">
+    <div id="alert"></div>
+    <div class="mb1">Add file name:
+      <input type="text" name="link" id="fileName" value=""></div>
+    <div class="mb1">Add link:
+      <input type="text" name="link" id="link" value=""></div>
+    <div id="buttons" class="mb1">
+    </div>
+    <div class="mb1"><button type="button" name="button" id="chooseDir">Выбрать директорию загрузки</button></div>
+  </div>
   <div id="menu">
   </div>
   <script>
-      require('./extension/popup.js');
-      const {ipcRenderer} = require('electron');
-  ipcRenderer.on('message', function(event, text) {
-    console.log(text);
-  })
+    require('./extension/popup.js');
+    const {
+      ipcRenderer
+    } = require('electron');
+    ipcRenderer.on('message', function(event, text) {
+      console.log(text);
+    })
+    function maxWin() {
+      if(remote.getCurrentWindow().isMaximized())
+        remote.getCurrentWindow().unmaximize()
+      else
+        remote.getCurrentWindow().maximize()
+    }
   </script>
 
 

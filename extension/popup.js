@@ -198,6 +198,7 @@ function contextMenu() {
     menuDef.append(new MenuItem({ label: 'Вставить', role: 'paste'}))
     menuDef.append(new MenuItem({ label: 'Копировать', role: 'copy'}))
     menuDef.append(new MenuItem({ label: 'Вырезать', role: 'cut'}))
+    menuDef.append(new MenuItem({ label: 'Открыть инструменты разработчика', role: 'toggledevtools'}))
   }
 
 
@@ -212,10 +213,10 @@ function contextMenu() {
       var posX = e.clientX;
       var posY = e.clientY;
       let target = e.target;
-      if (target.tagName == 'TR') {
+      if (target.tagName == 'TR' && target.dataset.id) {
         menu(posX, posY, target);
         e.preventDefault();
-      } else if (target.parentElement.tagName == 'TR') {
+      } else if (target.parentElement.tagName == 'TR' && target.parentElement.dataset.id) {
         menu(posX, posY, target.parentElement);
         e.preventDefault();
       }else if(menuDef){
